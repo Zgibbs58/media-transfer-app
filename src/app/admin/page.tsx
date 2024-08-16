@@ -1,14 +1,15 @@
 import { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import getSession from "@/lib/getSession";
 
 export const metadata: Metadata = {
   title: "Admin",
 };
 
 export default async function Page() {
-  // TODO: Redirect non-admin users
-  const session = await auth();
+  // Redirect non-admin users
+  const session = await getSession();
   const user = session?.user;
 
   if (!user) {
