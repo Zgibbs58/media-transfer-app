@@ -39,8 +39,8 @@ export default async function Page({ params: { id } }: PageProps) {
   return (
     <div className="mx-3 my-10 flex flex-col items-center gap-3">
       {user.image && (
-        <Image
-          src={user.image}
+        <img
+          src={user.image || "/avatar_placeholder.png"}
           width={100}
           alt="User profile picture"
           height={100}
