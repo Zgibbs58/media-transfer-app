@@ -17,23 +17,24 @@ datasource db {
 
 // Database schema for Next Auth
 // https://authjs.dev/getting-started/adapters/prisma
- 
+
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String    @unique
   emailVerified DateTime?
   image         String?
+  role          String?
   accounts      Account[]
   sessions      Session[]
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-//best practice for model names is to use the plural form lower case of the model name
+  //best practice for model names is to use the plural form lower case of the model name
   @@map("users")
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -46,36 +47,33 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([provider, providerAccountId])
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
   @@map("accounts")
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("sessions")
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
-  @@id([identifier, token])
 
+  @@id([identifier, token])
   @@map("verification_tokens")
 }
- 
