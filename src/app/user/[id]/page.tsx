@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import UploadForm from "../../../components/UploadForm";
+import UploadForm from "./UploadForm";
 
 interface PageProps {
   params: { id: string };
