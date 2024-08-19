@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import UploadForm from "./UploadForm";
+import ImageGrid from "./ImageGrid";
 
 interface PageProps {
   params: { id: string };
@@ -55,6 +56,12 @@ export default async function Page({ params: { id } }: PageProps) {
         User since {new Date(user.createdAt).toLocaleDateString()}
       </p>
       <UploadForm />
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-4">
+          <h2 className="text-2xl font-bold">Your Media</h2>
+        </div>
+        <ImageGrid />
+      </div>
     </div>
   );
 }
