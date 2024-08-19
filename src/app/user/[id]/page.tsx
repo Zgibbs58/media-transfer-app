@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import UploadForm from "../../../components/UploadForm";
 
 interface PageProps {
   params: { id: string };
@@ -53,6 +54,7 @@ export default async function Page({ params: { id } }: PageProps) {
       <p className="text-muted-foreground">
         User since {new Date(user.createdAt).toLocaleDateString()}
       </p>
+      <UploadForm />
     </div>
   );
 }
