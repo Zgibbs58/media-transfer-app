@@ -23,19 +23,24 @@ export async function onSubmit(formData: FormData) {
   }
 
   try {
+    const file = formData.get("file") as File;
     const fileKey = nanoid();
     // const client = new S3Client({ region: process.env.AWS_REGION });
     const { url, fields } = await createPresignedPost(client, {
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: fileKey,
+      Conditions: [
+        ["starts-with", "$Content-Type", "image/"], // Ensures the content type starts with "image/"
+      ],
+      Fields: {
+        "Content-Type": file.type, // Set the content type to the file's MIME type
+      },
     });
 
     const formDataS3 = new FormData();
     Object.entries(fields).forEach(([key, value]) => {
       formDataS3.append(key, value as string);
     });
-
-    const file = formData.get("file") as File;
 
     formDataS3.append("file", formData.get("file") as string);
 
@@ -95,16 +100,18 @@ export async function listImages() {
       const url = await getSignedUrl(client, getObjectCommand, {
         expiresIn: 3600,
       });
-      return url;
+      return { url, key: file.url };
     }),
   );
   return imageUrls;
 }
 
 export async function getDownloadUrl(key: string): Promise<string> {
+  // console.log("Key passed to handleDownload:", key);
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
+    ResponseContentDisposition: `attachment; filename="${key.split("/").pop()}"`,
   });
 
   const url = await getSignedUrl(client, command, { expiresIn: 3600 });
