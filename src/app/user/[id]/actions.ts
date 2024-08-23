@@ -73,16 +73,24 @@ export async function onSubmit(formData: FormData) {
 }
 
 export async function listImages() {
-  const command = new ListObjectsV2Command({
-    Bucket: process.env.AWS_BUCKET_NAME,
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  const files = await prisma.file.findMany({
+    where: {
+      userId: userId,
+    },
   });
 
-  const response = await client.send(command);
   const imageUrls = await Promise.all(
-    (response.Contents || []).map(async (item) => {
+    files.map(async (file) => {
       const getObjectCommand = new GetObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: item.Key,
+        Key: file.url,
       });
       const url = await getSignedUrl(client, getObjectCommand, {
         expiresIn: 3600,
@@ -90,7 +98,6 @@ export async function listImages() {
       return url;
     }),
   );
-
   return imageUrls;
 }
 
