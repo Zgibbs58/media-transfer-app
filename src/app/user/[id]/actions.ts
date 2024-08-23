@@ -8,22 +8,34 @@ import {
 const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
 import { nanoid } from "nanoid";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 
 const client = new S3Client({ region: process.env.AWS_REGION });
 
 export async function onSubmit(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
   // console.log("Form data submitted", formData.get("file"));
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
   try {
+    const fileKey = nanoid();
     // const client = new S3Client({ region: process.env.AWS_REGION });
     const { url, fields } = await createPresignedPost(client, {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: nanoid(),
+      Key: fileKey,
     });
 
     const formDataS3 = new FormData();
     Object.entries(fields).forEach(([key, value]) => {
       formDataS3.append(key, value as string);
     });
+
+    const file = formData.get("file") as File;
 
     formDataS3.append("file", formData.get("file") as string);
 
@@ -36,6 +48,19 @@ export async function onSubmit(formData: FormData) {
 
     if (response.ok) {
       console.log("File uploaded successfully", textResponse);
+
+      // After a successful upload, save the file metadata to the database
+      await prisma.file.create({
+        data: {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: fileKey,
+          userId: userId,
+        },
+      });
+
+      console.log("File metadata saved to database");
     } else {
       console.error("Failed to upload file", textResponse);
     }
